@@ -67,10 +67,8 @@ Crie um workspace ROS 2 e clone este repositório dentro da pasta `src`:
 ```bash
 mkdir -p ~/projeto_trainee_ws/src
 cd ~/projeto_trainee_ws/src
-git clone URL_DO_REPOSITORIO turtle_control
+git clone https://github.com/byancamari/turtle-control-ros2 turtle_control
 ```
-
-Substitua `URL_DO_REPOSITORIO` pela URL deste repositório.
 
 Instale as dependências necessárias:
 
