@@ -1,7 +1,5 @@
 # Turtle Control — ROS 2
 
-Projeto desenvolvido para o **2º Processo Seletivo Antecipado do RobôCIn**, na categoria Humanoid Soccer League. A aplicação possui dois nós ROS 2 em C++ que se comunicam por um tópico para controlar uma tartaruga no `turtlesim`.
-
 ## Objetivo
 
 O sistema recebe os comandos `right`, `left`, `up` e `down`. Cada comando desloca a posição lógica da tartaruga em uma unidade no plano cartesiano e movimenta a tartaruga exibida no `turtlesim`.
@@ -209,18 +207,7 @@ ros2 param set /turtlesim background_b 87
 ros2 service call /clear std_srvs/srv/Empty
 ```
 
-## Principais dificuldades e aprendizados
 
-As principais dificuldades foram compreender a organização de um workspace ROS 2, configurar corretamente os executáveis no `CMakeLists.txt` e converter comandos cartesianos em rotação e deslocamento físico no `turtlesim`.
-
-O desenvolvimento permitiu praticar:
-
-- Criação e compilação de pacotes ROS 2 em C++;
-- Comunicação assíncrona com publisher e subscriber;
-- Inspeção de nós e tópicos pela linha de comando;
-- Uso de mensagens `String`, `Twist` e `Pose`;
-- Controle de orientação, distância e estado de movimento;
-- Versionamento do projeto com Git e GitHub.
 
 ## Autora
 
