@@ -26,6 +26,8 @@ ament_target_dependencies(
   turtle
   rclcpp
   std_msgs
+  geometry_msgs
+  turtlesim
 )
 
 install(
