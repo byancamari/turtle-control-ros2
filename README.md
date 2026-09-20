@@ -202,7 +202,7 @@ Enquanto um movimento está sendo executado, novos comandos são recusados para 
 
 ## Cor opcional do simulador
 
-Com o `turtlesim` em execução, o fundo pode ser alterado para a cor `#469c57`:
+Com o `turtlesim` em execução, o fundo pode ser alterado para a cor `#469c57`(verde da equipe):
 
 ```bash
 ros2 param set /turtlesim background_r 70
