@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-O sistema recebe os comandos `right`, `left`, `up` e `down`. Cada comando desloca a posição lógica da tartaruga em uma unidade no plano cartesiano e movimenta a tartaruga exibida no `turtlesim`.
+Sistema em ROS 2 que recebe os comandos `right`, `left`, `up` e `down`. Cada comando atualiza a posição lógica da tartaruga em uma unidade e movimenta a tartaruga no `turtlesim`.
 
 A posição lógica começa em `(0, 0)`:
 
@@ -15,12 +15,12 @@ A posição lógica começa em `(0, 0)`:
 
 ## Arquitetura
 
-O pacote possui dois nós próprios:
+O projeto possui dois nós implementados em C++:
 
-- `send_msg`: recebe um comando digitado no terminal e publica uma mensagem no tópico `/move_command`;
-- `turtle`: recebe o comando, atualiza a posição lógica e controla a movimentação da tartaruga no simulador.
+- `send_msg`: lê o comando e publica no tópico `/move_command`;
+- `turtle`: recebe o comando, atualiza a posição lógica e controla o movimento.
 
-O nó `turtlesim` fornece a interface gráfica e informa a posição física da tartaruga.
+O `turtlesim_node` é o terceiro nó em execução. Ele fornece a interface gráfica e realiza o movimento visual.
 
 ```text
 send_msg
@@ -28,16 +28,17 @@ send_msg
     | /move_command (std_msgs/msg/String)
     v
 turtle
+    |
     | publica: /turtle1/cmd_vel
     | recebe:  /turtle1/pose
     v
 turtlesim
 ```
 
-## Tecnologias e dependências
+## Dependências
 
 - Ubuntu 24.04 LTS;
-- ROS 2 Jazzy Jalisco;
+- ROS 2 Jazzy;
 - C++;
 - `rclcpp`;
 - `std_msgs`;
@@ -45,7 +46,7 @@ turtlesim
 - `turtlesim`;
 - `colcon`.
 
-## Estrutura do pacote
+## Estrutura
 
 ```text
 turtle_control/
@@ -58,9 +59,9 @@ turtle_control/
 └── README.md
 ```
 
-## Como preparar o workspace
+## Instalação
 
-Crie um workspace ROS 2 e clone este repositório dentro da pasta `src`:
+Crie o workspace e clone o repositório:
 
 ```bash
 mkdir -p ~/projeto_trainee_ws/src
@@ -68,54 +69,46 @@ cd ~/projeto_trainee_ws/src
 git clone https://github.com/byancamari/turtle-control-ros2 turtle_control
 ```
 
-Instale as dependências necessárias:
+Instale as dependências e compile:
 
 ```bash
 cd ~/projeto_trainee_ws
+source /opt/ros/jazzy/setup.bash
 rosdep install --from-paths src --ignore-src -r -y
-```
-
-Compile o pacote:
-
-```bash
 colcon build --packages-select turtle_control
-```
-
-Carregue o workspace:
-
-```bash
 source install/setup.bash
 ```
 
-Esse comando deve ser executado em cada terminal novo usado para iniciar os nós do pacote.
-
-## Como executar
+## Execução
 
 São necessários três terminais.
 
-### Terminal 1 — simulador
+### Terminal 1 — turtlesim
 
 ```bash
+source /opt/ros/jazzy/setup.bash
 ros2 run turtlesim turtlesim_node
 ```
 
-### Terminal 2 — nó receptor e controlador
+### Terminal 2 — nó turtle
 
 ```bash
 cd ~/projeto_trainee_ws
+source /opt/ros/jazzy/setup.bash
 source install/setup.bash
 ros2 run turtle_control turtle
 ```
 
-### Terminal 3 — nó que envia os comandos
+### Terminal 3 — nó send_msg
 
 ```bash
 cd ~/projeto_trainee_ws
+source /opt/ros/jazzy/setup.bash
 source install/setup.bash
 ros2 run turtle_control send_msg
 ```
 
-No terceiro terminal, digite um dos comandos:
+Digite um comando por vez:
 
 ```text
 right
@@ -124,15 +117,18 @@ up
 down
 ```
 
-Espere a mensagem `Movimento concluído` no terminal do nó `turtle` antes de enviar o próximo comando.
+Espere a mensagem `Movimento concluído` antes de enviar o próximo comando. Digite `exit` para encerrar o `send_msg`.
 
-Digite `exit` para encerrar o nó `send_msg`.
+## Verificação
 
-## Como verificar os requisitos
+Com os três nós em execução, abra outro terminal:
 
-Com todos os nós em execução, abra outro terminal.
+```bash
+source /opt/ros/jazzy/setup.bash
+source ~/projeto_trainee_ws/install/setup.bash
+```
 
-### Verificar os nós
+Verifique os nós:
 
 ```bash
 ros2 node list
@@ -146,13 +142,13 @@ Resultado esperado:
 /turtlesim
 ```
 
-### Verificar os tópicos
+Verifique os tópicos:
 
 ```bash
 ros2 topic list
 ```
 
-Entre os tópicos exibidos devem estar:
+Entre os tópicos devem aparecer:
 
 ```text
 /move_command
@@ -160,55 +156,48 @@ Entre os tópicos exibidos devem estar:
 /turtle1/pose
 ```
 
-### Observar os comandos publicados
+Observe a comunicação entre os dois nós implementados:
 
 ```bash
 ros2 topic echo /move_command
 ```
 
-Ao digitar `right` no nó `send_msg`, por exemplo, deve aparecer:
+Ao enviar `right`, por exemplo, deverá aparecer:
 
 ```yaml
 data: right
 ---
 ```
 
-Também é possível observar os comandos de velocidade enviados ao simulador:
+## Funcionamento
 
-```bash
-ros2 topic echo /turtle1/cmd_vel
+O nó `turtle` mantém uma posição lógica iniciada em `(0, 0)` e recebe a posição física pelo tópico `/turtle1/pose`.
+
+Para cada comando, ele:
+
+1. Atualiza a posição lógica;
+2. Gira para a direção correta;
+3. Avança uma unidade;
+4. Para ao chegar ao destino.
+
+O controle utiliza os estados:
+
+```text
+IDLE → ROTATING → MOVING → IDLE
 ```
 
-## Funcionamento do controle
+## Cor opcional
 
-O nó `turtle` mantém duas referências de posição:
-
-- **Posição lógica:** começa em `(0, 0)` e é atualizada em uma unidade a cada comando;
-- **Posição física:** recebida pelo tópico `/turtle1/pose` e usada para controlar o movimento no simulador.
-
-Ao receber um comando, o controlador:
-
-1. Define a nova posição lógica e o destino físico;
-2. Gira a tartaruga para a direção correspondente;
-3. Publica velocidade linear em `/turtle1/cmd_vel`;
-4. Compara continuamente a posição atual com o destino;
-5. Publica velocidade zero quando o deslocamento termina.
-
-Enquanto um movimento está sendo executado, novos comandos são recusados para evitar sobreposição.
-
-## Cor opcional do simulador
-
-Com o `turtlesim` em execução, o fundo pode ser alterado para a cor `#469c57`(verde da equipe):
+Para usar o fundo `#469c57`:
 
 ```bash
+source /opt/ros/jazzy/setup.bash
 ros2 param set /turtlesim background_r 70
 ros2 param set /turtlesim background_g 156
 ros2 param set /turtlesim background_b 87
 ros2 service call /clear std_srvs/srv/Empty
 ```
 
-
-
 ## Autora
 
-**Byanca Maria da Silva**
+**Byanca Maria**
